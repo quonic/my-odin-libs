@@ -84,27 +84,12 @@ vec2_convert :: proc {
 	vec2_convert_to_f32,
 }
 
-vec2_convert_to_f64 :: proc(v: vec2_f32) -> vec2_f64 {
-	return vec2_f64{f64(v.x), f64(v.y)}
-}
-
-vec2_convert_to_f32 :: proc(v: vec2_f64) -> vec2_f32 {
-	return vec2_f32{f32(v.x), f32(v.y)}
-}
-
 vec2_cross_product :: proc {
 	vec2_cross_product_f32,
 	vec2_cross_product_f64,
 }
 
-vec2_cross_product_f32 :: proc(v: vec2_f32, w: vec2_f32) -> f32 {
-	return v.x * w.y - v.y * w.x
-}
-
-vec2_cross_product_f64 :: proc(v: vec2_f64, w: vec2_f64) -> f64 {
-	return v.x * w.y - v.y * w.x
-}
-
+// Maths
 vec2_add :: proc {
 	vec2_f32_add,
 	vec2_f64_add,
@@ -162,6 +147,14 @@ vec2_mag_sqr :: proc {
 
 // vec2_f32
 
+vec2_convert_to_f32 :: proc(v: vec2_f64) -> vec2_f32 {
+	return vec2_f32{f32(v.x), f32(v.y)}
+}
+
+vec2_cross_product_f32 :: proc(v: vec2_f32, w: vec2_f32) -> f32 {
+	return v.x * w.y - v.y * w.x
+}
+
 vec2_f32_add :: proc(a: vec2_f32, b: vec2_f32) -> vec2_f32 {
 	return vec2_f32{a.x + b.x, a.y + b.y}
 }
@@ -198,7 +191,6 @@ vec2_f32_normalize :: proc(v: vec2_f32) -> vec2_f32 {
 	return vec2_f32_div(v, vec2_f32{mag, mag})
 }
 
-
 vec2_f32_lerp :: proc(a: vec2_f32, b: vec2_f32, t: f32) -> vec2_f32 {
 	return vec2_f32_add(
 		vec2_f32_mul(a, vec2_f32{1.0 - t, 1.0 - t}),
@@ -206,48 +198,47 @@ vec2_f32_lerp :: proc(a: vec2_f32, b: vec2_f32, t: f32) -> vec2_f32 {
 	)
 }
 
-
 vec2_f32_min :: proc(a: vec2_f32, b: vec2_f32) -> vec2_f32 {
 	return vec2_f32{math.min(a.x, b.x), math.min(a.y, b.y)}
 }
-
 
 vec2_f32_max :: proc(a: vec2_f32, b: vec2_f32) -> vec2_f32 {
 	return vec2_f32{math.max(a.x, b.x), math.max(a.y, b.y)}
 }
 
-
 // vec2_f64
+
+vec2_convert_to_f64 :: proc(v: vec2_f32) -> vec2_f64 {
+	return vec2_f64{f64(v.x), f64(v.y)}
+}
+
+vec2_cross_product_f64 :: proc(v: vec2_f64, w: vec2_f64) -> f64 {
+	return v.x * w.y - v.y * w.x
+}
 
 vec2_f64_add :: proc(a: vec2_f64, b: vec2_f64) -> vec2_f64 {
 	return vec2_f64{a.x + b.x, a.y + b.y}
 }
 
-
 vec2_f64_sub :: proc(a: vec2_f64, b: vec2_f64) -> vec2_f64 {
 	return vec2_f64{a.x - b.x, a.y - b.y}
 }
-
 
 vec2_f64_mul :: proc(a: vec2_f64, b: vec2_f64) -> vec2_f64 {
 	return vec2_f64{a.x * b.x, a.y * b.y}
 }
 
-
 vec2_f64_div :: proc(a: vec2_f64, b: vec2_f64) -> vec2_f64 {
 	return vec2_f64{a.x / b.x, a.y / b.y}
 }
-
 
 vec2_f64_dot :: proc(a: vec2_f64, b: vec2_f64) -> f64 {
 	return a.x * b.x + a.y * b.y
 }
 
-
 vec2_f64_mag :: proc(v: vec2_f64) -> f64 {
 	return math.sqrt(v.x * v.x + v.y * v.y)
 }
-
 
 vec2_f64_mag_sqr :: proc(v: vec2_f64) -> f64 {
 	return v.x * v.x + v.y * v.y
