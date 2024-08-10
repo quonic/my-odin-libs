@@ -68,56 +68,6 @@ vec2 :: union {
 	vec2_f64,
 }
 
-vec2_add :: union {
-	vec2_f32,
-	vec2_f64,
-}
-
-vec2_sub :: union {
-	vec2_f32,
-	vec2_f64,
-}
-
-vec2_mul :: union {
-	vec2_f32,
-	vec2_f64,
-}
-
-vec2_div :: union {
-	vec2_f32,
-	vec2_f64,
-}
-
-vec2_mag :: union {
-	vec2_f32,
-	vec2_f64,
-}
-
-vec2_dot :: union {
-	vec2_f32,
-	vec2_f64,
-}
-
-vec2_min :: union {
-	vec2_f32,
-	vec2_f64,
-}
-
-vec2_max :: union {
-	vec2_f32,
-	vec2_f64,
-}
-
-vec2_lerp :: union {
-	vec2_f32,
-	vec2_f64,
-}
-
-vec2_normalize :: union {
-	vec2_f32,
-	vec2_f64,
-}
-
 vec2_f32 :: struct {
 	x: f32,
 	y: f32,
@@ -129,6 +79,10 @@ vec2_f64 :: struct {
 }
 
 // Conversions
+vec2_convert :: proc {
+	vec2_convert_to_f64,
+	vec2_convert_to_f32,
+}
 
 vec2_convert_to_f64 :: proc(v: vec2_f32) -> vec2_f64 {
 	return vec2_f64{f64(v.x), f64(v.y)}
@@ -136,6 +90,74 @@ vec2_convert_to_f64 :: proc(v: vec2_f32) -> vec2_f64 {
 
 vec2_convert_to_f32 :: proc(v: vec2_f64) -> vec2_f32 {
 	return vec2_f32{f32(v.x), f32(v.y)}
+}
+
+vec2_cross_product :: proc {
+	vec2_cross_product_f32,
+	vec2_cross_product_f64,
+}
+
+vec2_cross_product_f32 :: proc(v: vec2_f32, w: vec2_f32) -> f32 {
+	return v.x * w.y - v.y * w.x
+}
+
+vec2_cross_product_f64 :: proc(v: vec2_f64, w: vec2_f64) -> f64 {
+	return v.x * w.y - v.y * w.x
+}
+
+vec2_add :: proc {
+	vec2_f32_add,
+	vec2_f64_add,
+}
+
+vec2_sub :: proc {
+	vec2_f32_sub,
+	vec2_f64_sub,
+}
+
+vec2_mul :: proc {
+	vec2_f32_mul,
+	vec2_f64_mul,
+}
+
+vec2_div :: proc {
+	vec2_f32_div,
+	vec2_f64_div,
+}
+
+vec2_mag :: proc {
+	vec2_f32_mag,
+	vec2_f64_mag,
+}
+
+vec2_dot :: proc {
+	vec2_f32_dot,
+	vec2_f64_dot,
+}
+
+vec2_min :: proc {
+	vec2_f32_min,
+	vec2_f64_min,
+}
+
+vec2_max :: proc {
+	vec2_f32_max,
+	vec2_f64_max,
+}
+
+vec2_lerp :: proc {
+	vec2_f32_lerp,
+	vec2_f64_lerp,
+}
+
+vec2_normalize :: proc {
+	vec2_f32_normalize,
+	vec2_f64_normalize,
+}
+
+vec2_mag_sqr :: proc {
+	vec2_f32_mag_sqr,
+	vec2_f64_mag_sqr,
 }
 
 // vec2_f32
@@ -258,7 +280,7 @@ vec2_f64_max :: proc(a: vec2_f64, b: vec2_f64) -> vec2_f64 {
 test_vec2_f32_add :: proc(t: ^testing.T) {
 	v := vec2_f32{1, 2}
 	v2 := vec2_f32{3, 4}
-	v3 := vec2_f32_add(v, v2)
+	v3 := vec2_add(v, v2)
 	assert(v3.x == 4)
 	assert(v3.y == 6)
 }
@@ -267,7 +289,7 @@ test_vec2_f32_add :: proc(t: ^testing.T) {
 test_vec2_f32_sub :: proc(t: ^testing.T) {
 	v := vec2_f32{1, 2}
 	v2 := vec2_f32{3, 4}
-	v3 := vec2_f32_sub(v, v2)
+	v3 := vec2_sub(v, v2)
 	assert(v3.x == -2)
 	assert(v3.y == -2)
 }
@@ -276,7 +298,7 @@ test_vec2_f32_sub :: proc(t: ^testing.T) {
 test_vec2_f32_mul :: proc(t: ^testing.T) {
 	v := vec2_f32{1, 2}
 	v2 := vec2_f32{3, 4}
-	v3 := vec2_f32_mul(v, v2)
+	v3 := vec2_mul(v, v2)
 	assert(v3.x == 3)
 	assert(v3.y == 8)
 }
@@ -285,7 +307,7 @@ test_vec2_f32_mul :: proc(t: ^testing.T) {
 test_vec2_f32_div :: proc(t: ^testing.T) {
 	v := vec2_f32{1, 2}
 	v2 := vec2_f32{3, 4}
-	v3 := vec2_f32_div(v, v2)
+	v3 := vec2_div(v, v2)
 	assert(v3.x == 0.33333334)
 	assert(v3.y == 0.5)
 }
@@ -293,7 +315,7 @@ test_vec2_f32_div :: proc(t: ^testing.T) {
 @(test)
 test_vec2_convert_to_f64 :: proc(t: ^testing.T) {
 	v := vec2_f32{1, 2}
-	v2 := vec2_convert_to_f64(v)
+	v2 := vec2_convert(v)
 	assert(v2.x == 1.0)
 	assert(v2.y == 2.0)
 }
@@ -301,7 +323,7 @@ test_vec2_convert_to_f64 :: proc(t: ^testing.T) {
 @(test)
 test_vec2_convert_to_f32 :: proc(t: ^testing.T) {
 	v := vec2_f64{1, 2}
-	v2 := vec2_convert_to_f32(v)
+	v2 := vec2_convert(v)
 	assert(v2.x == 1.0)
 	assert(v2.y == 2.0)
 }
@@ -310,28 +332,28 @@ test_vec2_convert_to_f32 :: proc(t: ^testing.T) {
 test_vec2_f32_dot :: proc(t: ^testing.T) {
 	v := vec2_f32{1, 2}
 	v2 := vec2_f32{3, 4}
-	dot := vec2_f32_dot(v, v2)
+	dot := vec2_dot(v, v2)
 	assert(dot == 11)
 }
 
 @(test)
 test_vec2_f32_mag_sqr :: proc(t: ^testing.T) {
 	v := vec2_f32{1, 2}
-	mag_sqr := vec2_f32_mag_sqr(v)
+	mag_sqr := vec2_mag_sqr(v)
 	assert(mag_sqr == 5)
 }
 
 @(test)
 test_vec2_f32_mag :: proc(t: ^testing.T) {
 	v := vec2_f32{1, 2}
-	mag := vec2_f32_mag(v)
+	mag := vec2_mag(v)
 	assert(mag <= 2.24 && mag >= 2.23, fmt.tprintf("Magnitude: %f not 2.236", mag))
 }
 
 @(test)
 test_vec2_f32_normalize :: proc(t: ^testing.T) {
 	v := vec2_f32{1, 2}
-	v2 := vec2_f32_normalize(v)
+	v2 := vec2_normalize(v)
 	assert(v2.x <= 0.45 && v2.x >= 0.44, fmt.tprintf("x: %f", v2.x))
 	assert(v2.y >= 0.87 && v2.y >= 0.89, fmt.tprintf("y: %f", v2.y))
 }
@@ -340,7 +362,7 @@ test_vec2_f32_normalize :: proc(t: ^testing.T) {
 test_vec2_f32_lerp :: proc(t: ^testing.T) {
 	v := vec2_f32{1, 2}
 	v2 := vec2_f32{3, 4}
-	lerp := vec2_f32_lerp(v, v2, 0.5)
+	lerp := vec2_lerp(v, v2, 0.5)
 	assert(lerp.x == 2)
 	assert(lerp.y == 3)
 }
@@ -349,7 +371,7 @@ test_vec2_f32_lerp :: proc(t: ^testing.T) {
 test_vec2_f32_min :: proc(t: ^testing.T) {
 	v := vec2_f32{1, 2}
 	v2 := vec2_f32{3, 4}
-	min := vec2_f32_min(v, v2)
+	min := vec2_min(v, v2)
 	assert(min.x == 1)
 	assert(min.y == 2)
 }
@@ -358,7 +380,7 @@ test_vec2_f32_min :: proc(t: ^testing.T) {
 test_vec2_f32_max :: proc(t: ^testing.T) {
 	v := vec2_f32{1, 2}
 	v2 := vec2_f32{3, 4}
-	max := vec2_f32_max(v, v2)
+	max := vec2_max(v, v2)
 	assert(max.x == 3)
 	assert(max.y == 4)
 }
@@ -367,7 +389,7 @@ test_vec2_f32_max :: proc(t: ^testing.T) {
 test_vec2_f64_add :: proc(t: ^testing.T) {
 	v := vec2_f64{1, 2}
 	v2 := vec2_f64{3, 4}
-	v3 := vec2_f64_add(v, v2)
+	v3 := vec2_add(v, v2)
 	assert(v3.x == 4)
 	assert(v3.y == 6)
 }
@@ -376,7 +398,7 @@ test_vec2_f64_add :: proc(t: ^testing.T) {
 test_vec2_f64_sub :: proc(t: ^testing.T) {
 	v := vec2_f64{1, 2}
 	v2 := vec2_f64{3, 4}
-	v3 := vec2_f64_sub(v, v2)
+	v3 := vec2_sub(v, v2)
 	assert(v3.x == -2)
 	assert(v3.y == -2)
 }
@@ -385,7 +407,7 @@ test_vec2_f64_sub :: proc(t: ^testing.T) {
 test_vec2_f64_mul :: proc(t: ^testing.T) {
 	v := vec2_f64{1, 2}
 	v2 := vec2_f64{3, 4}
-	v3 := vec2_f64_mul(v, v2)
+	v3 := vec2_mul(v, v2)
 	assert(v3.x == 3)
 	assert(v3.y == 8)
 }
@@ -394,7 +416,7 @@ test_vec2_f64_mul :: proc(t: ^testing.T) {
 test_vec2_f64_div :: proc(t: ^testing.T) {
 	v := vec2_f64{1, 2}
 	v2 := vec2_f64{3, 4}
-	v3 := vec2_f64_div(v, v2)
+	v3 := vec2_div(v, v2)
 	assert(v3.x <= 0.334 && v3.x >= 0.332, fmt.tprintf("x: %f", v3.x))
 	assert(v3.y == 0.5, fmt.tprintf("y: %f", v3.y))
 }
@@ -403,28 +425,28 @@ test_vec2_f64_div :: proc(t: ^testing.T) {
 test_vec2_f64_dot :: proc(t: ^testing.T) {
 	v := vec2_f64{1, 2}
 	v2 := vec2_f64{3, 4}
-	dot := vec2_f64_dot(v, v2)
+	dot := vec2_dot(v, v2)
 	assert(dot == 11)
 }
 
 @(test)
 test_vec2_f64_mag :: proc(t: ^testing.T) {
 	v := vec2_f64{1, 2}
-	mag := vec2_f64_mag(v)
+	mag := vec2_mag(v)
 	assert(mag <= 2.24 && mag >= 2.23, fmt.tprintf("Magnitude: %f not 2.236", mag))
 }
 
 @(test)
 test_vec2_f64_mag_sqr :: proc(t: ^testing.T) {
 	v := vec2_f64{1, 2}
-	mag_sqr := vec2_f64_mag_sqr(v)
+	mag_sqr := vec2_mag_sqr(v)
 	assert(mag_sqr == 5)
 }
 
 @(test)
 test_vec2_f64_normalize :: proc(t: ^testing.T) {
 	v := vec2_f64{1, 2}
-	v2 := vec2_f64_normalize(v)
+	v2 := vec2_normalize(v)
 	assert(v2.x <= 0.45 && v2.x >= 0.44, fmt.tprintf("x: %f", v2.x))
 	assert(v2.y >= 0.87 && v2.y >= 0.89, fmt.tprintf("y: %f", v2.y))
 }
@@ -433,7 +455,7 @@ test_vec2_f64_normalize :: proc(t: ^testing.T) {
 test_vec2_f64_lerp :: proc(t: ^testing.T) {
 	v := vec2_f64{1, 2}
 	v2 := vec2_f64{3, 4}
-	lerp := vec2_f64_lerp(v, v2, 0.5)
+	lerp := vec2_lerp(v, v2, 0.5)
 	assert(lerp.x == 2)
 	assert(lerp.y == 3)
 }
@@ -442,7 +464,7 @@ test_vec2_f64_lerp :: proc(t: ^testing.T) {
 test_vec2_f64_min :: proc(t: ^testing.T) {
 	v := vec2_f64{1, 2}
 	v2 := vec2_f64{3, 4}
-	min := vec2_f64_min(v, v2)
+	min := vec2_min(v, v2)
 	assert(min.x == 1)
 	assert(min.y == 2)
 }
@@ -451,7 +473,25 @@ test_vec2_f64_min :: proc(t: ^testing.T) {
 test_vec2_f64_max :: proc(t: ^testing.T) {
 	v := vec2_f64{1, 2}
 	v2 := vec2_f64{3, 4}
-	max := vec2_f64_max(v, v2)
+	max := vec2_max(v, v2)
 	assert(max.x == 3)
 	assert(max.y == 4)
+}
+
+@(test)
+test_vec2_convert :: proc(t: ^testing.T) {
+	v := vec2_f32{1, 2}
+	v2 := vec2_convert(v)
+	assert(v2.x == 1.0)
+	assert(v2.y == 2.0)
+
+	v3 := vec2_convert(v2)
+	assert(v3.x == 1.0)
+	assert(v3.y == 2.0)
+}
+
+@(test)
+test_vec2_cross_product :: proc(t: ^testing.T) {
+	assert(vec2_cross_product(vec2_f32{1.0, 2.0}, vec2_f32{3.0, 4.0}) == -2.0)
+	assert(vec2_cross_product_f64(vec2_f64{1.0, 2.0}, vec2_f64{3.0, 4.0}) == -2.0)
 }
