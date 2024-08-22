@@ -24,10 +24,8 @@ SetWindowToPrimaryMonitor :: proc(setFps: bool = false) {
 	assert(monitors > 0, "Error: No monitors detected")
 
 	monitorIndex := GetPrimaryMonitor()
+	assert(monitorIndex >= 0, "Error: No primary monitor detected")
 
-	if monitorIndex == -1 {
-		return
-	}
 	raylib.SetWindowMonitor(monitorIndex)
 	if setFps {
 		raylib.SetTargetFPS(raylib.GetMonitorRefreshRate(monitorIndex))
