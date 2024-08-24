@@ -12,3 +12,14 @@ Functions to move our game window to the primary monitor and get the primary mon
 2D vector that support float 32 and float 64.
 
 Raylib doesn't support 64 floats, so this is my attempt to do this my self. At least start to.
+
+## [execute_command.odin](execute_command.odin)
+Lets you run a command and get stdout.
+
+Example Usage:
+```
+root_buf: [1024]byte
+data := root_buf[:]
+code, ok, out := run_executable("ls -lah", &data)
+fmt.println(string(out))
+```
