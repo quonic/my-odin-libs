@@ -27,6 +27,12 @@ fmt.println(string(out))
 ## [aseprite.odin](aseprite/aseprite.odin)
 Parses an exported Aseprite json sprite sheet.
 
+Mostly this is inteded for getting the slice positions in the image.
+
+This assumes the only settings changed in the Output tab are:
+ * Checking: Output File and JSON Data
+ * Unchecking Meta: Layers and Tags
+
 Example Usage:
 ```odin
 mySprite := ReadAsespriteJsonFile("assets/mySprite.json")
