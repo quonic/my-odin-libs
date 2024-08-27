@@ -2,9 +2,7 @@ package main
 
 /*
 
-Center the window on the center monitor.
-
-Supports any amount of monitors.
+Move the window to the primary monitor.
 
 ### Usage
 
