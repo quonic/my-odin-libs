@@ -17,9 +17,17 @@ Raylib doesn't support 64 floats, so this is my attempt to do this my self. At l
 Lets you run a command and get stdout.
 
 Example Usage:
-```
+```odin
 root_buf: [1024]byte
 data := root_buf[:]
 code, ok, out := run_executable("ls -lah", &data)
 fmt.println(string(out))
+```
+
+## [aseprite.odin](aseprite/aseprite.odin)
+Parses an exported Aseprite json sprite sheet.
+
+Example Usage:
+```odin
+mySprite := ReadAsespriteJsonFile("assets/mySprite.json")
 ```
