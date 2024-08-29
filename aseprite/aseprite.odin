@@ -68,7 +68,7 @@ ReadAsespriteJsonFile :: proc(
 
 	aseprite = new(Aseprite)
 	err := json.unmarshal(data, aseprite)
-	assert(err != nil, fmt.tprintf("Error: %v", err))
+	assert(err == nil, fmt.tprintf("Error: %v", err))
 	ok = err == nil
 	return
 }
