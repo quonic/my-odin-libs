@@ -121,7 +121,7 @@ addAudioAsset :: proc(
 		result = miniaudio.sound_init_from_file(
 			&audioEngine,
 			fmt.caprint(asset.path),
-			u32(miniaudio.sound_flags.DECODE),
+			miniaudio.sound_flags{miniaudio.sound_flag.DECODE},
 			nil,
 			nil,
 			&asset.sound,
@@ -130,7 +130,7 @@ addAudioAsset :: proc(
 		result = miniaudio.sound_init_from_file(
 			&audioEngine,
 			fmt.caprint(asset.path),
-			u32(miniaudio.sound_flags.DECODE | miniaudio.sound_flags.STREAM),
+			miniaudio.sound_flags{miniaudio.sound_flag.DECODE, miniaudio.sound_flag.STREAM},
 			nil,
 			nil,
 			&asset.sound,
