@@ -14,7 +14,7 @@ import "vendor:raylib"
 	It isn't perfect and there is room for improvement, but it works well enough for
 	a simple Particle Emitter.
 
-	This is all done on the CPU. On my machine, it can create 11200 Particles at ~30 FPS.
+	This is all done on the CPU. On my machine, it can create 11200 Particles at ~30 FPS from 200 emitters.
 
 	This is just single-threaded, so I'm sure it can be improved by using multiple threads.
 
