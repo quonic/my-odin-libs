@@ -12,7 +12,11 @@ Functions to move our game window to the primary monitor and get the primary mon
 
 ## [particle.odin](particle.odin)
 
-a simple Particle Emitter that can be used as a jumping off point for a more complex Particle Emitter.
+A Particle Emitter that can be used as a jumping off point for a more complex Particle Emitter.
+
+Includes support for gravity, wind, drag, and collisions.
+
+![Example](images/particles.png)
 
 ## [vec2.odin](vec2.odin)
 

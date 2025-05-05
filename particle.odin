@@ -111,6 +111,14 @@ Emitter :: struct {
 	is_gravity:            bool,
 	// Gravity of the Particle Emitter
 	gravity:               raylib.Vector2,
+	// Whether the Particle Emitter is affected by wind
+	is_wind:               bool,
+	// Wind of the Particle Emitter
+	wind:                  raylib.Vector2,
+	// Whether the Particle Emitter is affected by drag
+	is_drag:               bool,
+	// Drag of the Particle Emitter
+	drag:                  f32,
 }
 
 DrawEmitter :: proc(emitter: Emitter) {
@@ -135,19 +143,19 @@ NewRandomParticle :: proc(emitter: ^Emitter) -> Particle {
 	}
 }
 
-UpdateEmitter :: proc(emitter: ^Emitter, deltaTime: f32) {
+UpdateEmitter :: proc(emitter: ^Emitter, deltaTime: f32, bounds: []raylib.Rectangle = {}) {
 	// Update the time since the last Particle
 	emitter.timeSinceLastParticle += deltaTime
 
 	// Check if the Particle Emitter is empty
 	if len(emitter.Particles) == 0 {
 		// Reset the Particle Emitter
-		emitter.timeSinceLastParticle = 0.0
+		emitter.timeSinceLastParticle = emitter.timeBetweenParticles
 	}
 
 	// Check if it's time to create a new Particle
-	if emitter.timeSinceLastParticle >= emitter.timeBetweenParticles ||
-	   len(emitter.Particles) < int(emitter.maxParticles) {
+	shouldSpawn := emitter.timeSinceLastParticle >= emitter.timeBetweenParticles
+	if shouldSpawn {
 		// Create a new Particle
 		Particle := NewRandomParticle(emitter)
 		Particle.velocity += GetRandomVector2Direction() * emitter.magnitude
@@ -172,14 +180,38 @@ UpdateEmitter :: proc(emitter: ^Emitter, deltaTime: f32) {
 			ordered_remove(&emitter.Particles, i)
 			i = i - 1
 		} else {
+			// Check if the Particle collides with the bounds
+			if len(bounds) > 0 {
+				for bound in bounds {
+					if raylib.CheckCollisionCircleRec(particle.position, particle.size, bound) {
+						// Bounce the Particle at the angle of the bound
+						// Calculate the normal of the bound
+						normal := raylib.Vector2Normalize(
+							raylib.Vector2 {
+								particle.position.x - (bound.x + bound.width / 2),
+								particle.position.y - (bound.y + bound.height / 2),
+							},
+						)
+						// Calculate the reflection vector
+						particle.velocity =
+							normal * 2.0 * raylib.Vector2DotProduct(particle.velocity, normal) -
+							particle.velocity
+					}
+				}
+			}
 			// Update the Particle position
+			particle.position += particle.velocity * deltaTime
 			if emitter.is_gravity {
 				// Update the Particle position with gravity
-				particle.position += particle.velocity * deltaTime
 				particle.velocity += emitter.gravity * deltaTime
-			} else {
-				// Update the Particle position without gravity
-				particle.position += particle.velocity * deltaTime
+			}
+			if emitter.is_wind {
+				// Update the Particle position with wind
+				particle.velocity += emitter.wind * deltaTime
+			}
+			if emitter.is_drag {
+				// Update the Particle position with drag
+				particle.velocity -= particle.velocity * emitter.drag * deltaTime
 			}
 		}
 	}
