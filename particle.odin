@@ -1,8 +1,9 @@
 package main
 
 import "core:math"
+import "core:math/linalg"
+import "core:math/linalg/glsl"
 import "vendor:raylib"
-
 /*
 
 	Particle Emitter
@@ -87,6 +88,15 @@ Particle :: struct {
 	age:      f32,
 }
 
+ParticleCollision :: enum {
+	// The Particle is not affected by collisions
+	None,
+	// The Particle bounces off the bounds
+	Bounce,
+	// The Particle is destroyed on collision
+	Destroy,
+}
+
 // The particle emitter
 Emitter :: struct {
 	// The list of Particles
@@ -119,6 +129,22 @@ Emitter :: struct {
 	is_drag:               bool,
 	// Drag of the Particle Emitter
 	drag:                  f32,
+	// Collision type of the Particle Emitter
+	collision:             ParticleCollision,
+}
+
+Circle :: struct {
+	// The center of the Circle
+	center: raylib.Vector2,
+	// The radius of the Circle
+	radius: f32,
+}
+
+CollissionShape :: union {
+	// Rectangle
+	raylib.Rectangle,
+	// Circle
+	Circle,
 }
 
 DrawEmitter :: proc(emitter: Emitter) {
@@ -143,7 +169,12 @@ NewRandomParticle :: proc(emitter: ^Emitter) -> Particle {
 	}
 }
 
-UpdateEmitter :: proc(emitter: ^Emitter, deltaTime: f32, bounds: []raylib.Rectangle = {}) {
+UpdateEmitter :: proc(
+	emitter: ^Emitter,
+	deltaTime: f32,
+	circleBounds: []Circle = nil,
+	rectBounds: []raylib.Rectangle = nil,
+) {
 	// Update the time since the last Particle
 	emitter.timeSinceLastParticle += deltaTime
 
@@ -180,27 +211,6 @@ UpdateEmitter :: proc(emitter: ^Emitter, deltaTime: f32, bounds: []raylib.Rectan
 			ordered_remove(&emitter.Particles, i)
 			i = i - 1
 		} else {
-			// Check if the Particle collides with the bounds
-			if len(bounds) > 0 {
-				for bound in bounds {
-					if raylib.CheckCollisionCircleRec(particle.position, particle.size, bound) {
-						// Bounce the Particle at the angle of the bound
-						// Calculate the normal of the bound
-						normal := raylib.Vector2Normalize(
-							raylib.Vector2 {
-								particle.position.x - (bound.x + bound.width / 2),
-								particle.position.y - (bound.y + bound.height / 2),
-							},
-						)
-						// Calculate the reflection vector
-						particle.velocity =
-							normal * 2.0 * raylib.Vector2DotProduct(particle.velocity, normal) -
-							particle.velocity
-					}
-				}
-			}
-			// Update the Particle position
-			particle.position += particle.velocity * deltaTime
 			if emitter.is_gravity {
 				// Update the Particle position with gravity
 				particle.velocity += emitter.gravity * deltaTime
@@ -213,6 +223,81 @@ UpdateEmitter :: proc(emitter: ^Emitter, deltaTime: f32, bounds: []raylib.Rectan
 				// Update the Particle position with drag
 				particle.velocity -= particle.velocity * emitter.drag * deltaTime
 			}
+
+			// Check if the Particle collides with the bounds
+			if len(circleBounds) > 0 {
+				for bound in circleBounds {
+					if raylib.CheckCollisionCircles(
+						particle.position,
+						particle.size,
+						bound.center,
+						bound.radius,
+					) {
+						switch emitter.collision {
+						case ParticleCollision.Destroy:
+							// Remove the Particle
+							ordered_remove(&emitter.Particles, i)
+							i = i - 1
+						case ParticleCollision.Bounce:
+							// Where on the Circle is the Particle
+							collision_normal: raylib.Vector2
+							collision_normal.x = particle.position.x - bound.center.x
+							collision_normal.y = particle.position.y - bound.center.y
+							// Adjust for the particle's size
+							if glsl.length(collision_normal) < particle.size + bound.radius {
+								// Normalize the collision normal
+								collision_normal = glsl.normalize(collision_normal)
+								// Reflect the Particle
+								particle.velocity = glsl.reflect(
+									particle.velocity,
+									collision_normal,
+								)
+							}
+						case ParticleCollision.None:
+						}
+					}
+				}
+			}
+			if len(rectBounds) > 0 {
+				for bound in rectBounds {
+					if raylib.CheckCollisionCircleRec(particle.position, particle.size, bound) {
+						switch emitter.collision {
+						case ParticleCollision.Destroy:
+							// Remove the Particle
+							ordered_remove(&emitter.Particles, i)
+							i = i - 1
+						case ParticleCollision.Bounce:
+							// Where on the Rectangle is the Particle
+							collision_normal: raylib.Vector2
+							if particle.position.x < bound.x {
+								collision_normal.x = -1.0
+							} else if particle.position.x > bound.x + bound.width {
+								collision_normal.x = 1.0
+							}
+							if particle.position.y < bound.y {
+								collision_normal.y = -1.0
+							} else if particle.position.y > bound.y + bound.height {
+								collision_normal.y = 1.0
+							}
+							// Reflect the Particle
+							particle.velocity = glsl.reflect(particle.velocity, collision_normal)
+							// Adjust for the particle's size
+							if glsl.length(collision_normal) < particle.size {
+								// Normalize the collision normal
+								collision_normal = glsl.normalize(collision_normal)
+								// Reflect the Particle
+								particle.velocity = glsl.reflect(
+									particle.velocity,
+									collision_normal,
+								)
+							}
+						case ParticleCollision.None:
+						}
+					}
+				}
+			}
+			// Update the Particle position
+			particle.position += particle.velocity * deltaTime
 		}
 	}
 }
@@ -221,5 +306,10 @@ UpdateEmitter :: proc(emitter: ^Emitter, deltaTime: f32, bounds: []raylib.Rectan
 GetRandomVector2Direction :: proc() -> raylib.Vector2 {
 	// Get a random direction
 	angle := f32(raylib.GetRandomValue(0, 360)) * math.PI / 180.0
-	return raylib.Vector2Normalize(raylib.Vector2{math.cos(angle), math.sin(angle)})
+	return glsl.normalize(raylib.Vector2{glsl.cos(angle), glsl.sin(angle)})
+}
+
+reflect :: proc(dir, normal: raylib.Vector2) -> raylib.Vector2 {
+	new_direction := glsl.reflect(dir, glsl.normalize(normal))
+	return glsl.normalize(new_direction)
 }
