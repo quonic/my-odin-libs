@@ -4,6 +4,7 @@ import "core:math"
 import "core:math/linalg"
 import "core:math/linalg/glsl"
 import "vendor:raylib"
+
 /*
 
 	Particle Emitter
@@ -234,11 +235,11 @@ UpdateEmitter :: proc(
 						bound.radius,
 					) {
 						switch emitter.collision {
-						case ParticleCollision.Destroy:
+						case .Destroy:
 							// Remove the Particle
 							ordered_remove(&emitter.Particles, i)
 							i = i - 1
-						case ParticleCollision.Bounce:
+						case .Bounce:
 							// Where on the Circle is the Particle
 							collision_normal: raylib.Vector2
 							collision_normal.x = particle.position.x - bound.center.x
@@ -253,7 +254,7 @@ UpdateEmitter :: proc(
 									collision_normal,
 								)
 							}
-						case ParticleCollision.None:
+						case .None:
 						}
 					}
 				}
@@ -262,36 +263,30 @@ UpdateEmitter :: proc(
 				for bound in rectBounds {
 					if raylib.CheckCollisionCircleRec(particle.position, particle.size, bound) {
 						switch emitter.collision {
-						case ParticleCollision.Destroy:
+						case .Destroy:
+							particle.color = raylib.RED
 							// Remove the Particle
 							ordered_remove(&emitter.Particles, i)
 							i = i - 1
-						case ParticleCollision.Bounce:
+						case .Bounce:
+							margin := bound.width / 100
 							// Where on the Rectangle is the Particle
 							collision_normal: raylib.Vector2
-							if particle.position.x < bound.x {
+							if particle.position.x < bound.x + margin {
 								collision_normal.x = -1.0
-							} else if particle.position.x > bound.x + bound.width {
+							} else if particle.position.x > bound.x + bound.width - margin {
 								collision_normal.x = 1.0
 							}
-							if particle.position.y < bound.y {
+							if particle.position.y < bound.y + margin {
 								collision_normal.y = -1.0
-							} else if particle.position.y > bound.y + bound.height {
+							} else if particle.position.y > bound.y + bound.height - margin {
 								collision_normal.y = 1.0
 							}
+							// Normalize the collision normal
+							collision_normal = glsl.normalize(collision_normal)
 							// Reflect the Particle
 							particle.velocity = glsl.reflect(particle.velocity, collision_normal)
-							// Adjust for the particle's size
-							if glsl.length(collision_normal) < particle.size {
-								// Normalize the collision normal
-								collision_normal = glsl.normalize(collision_normal)
-								// Reflect the Particle
-								particle.velocity = glsl.reflect(
-									particle.velocity,
-									collision_normal,
-								)
-							}
-						case ParticleCollision.None:
+						case .None:
 						}
 					}
 				}
