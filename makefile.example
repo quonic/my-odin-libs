@@ -1,0 +1,25 @@
+# Example of a makefile for a generic odin project
+#  where main.odin is in the same directory as this makefile
+
+# Customize as needed!
+
+# Define the Odin compiler command
+ODIN_CMD := $(shell which odin)
+
+# Name of your main Odin package (the directory containing your main.odin file)
+PACKAGE_NAME := $(shell basename $(CURDIR))
+
+# Default target: builds and runs the program
+all: run
+
+# Build the program
+build:
+	$(ODIN_CMD) build .
+
+# Run the program
+run: build
+	./$(PACKAGE_NAME)
+
+# Clean up compiled files
+clean:
+	rm -f $(PACKAGE_NAME)
