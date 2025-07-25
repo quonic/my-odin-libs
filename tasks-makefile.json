@@ -1,5 +1,4 @@
 {
-  // Example task for makefile building
   "version": "2.0.0",
   "tasks": [
     {
@@ -13,7 +12,20 @@
         "isDefault": true
       },
       "problemMatcher": [],
-      "detail": "CMake template build task"
+      "detail": "build task"
+    },
+    {
+      // Build task from makefile
+      "type": "shell",
+      "label": "Clean",
+      "command": "make",
+      "args": ["clean"],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": [],
+      "detail": "build clean task"
     }
   ]
 }
