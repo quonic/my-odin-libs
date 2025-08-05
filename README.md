@@ -10,6 +10,10 @@ A simple wrapper around miniaudio with error checking and audio asset management
 
 Functions to move our game window to the primary monitor and get the primary monitor.
 
+## [file_dialog](file_dialog/)
+
+Open and save file dialogs for Odin using the native file dialog library for Windows and zenity/kdialog on Linux. Also include support for popup dialogs.
+
 ## [particle.odin](particle.odin)
 
 A Particle Emitter that can be used as a jumping off point for a more complex Particle Emitter.
