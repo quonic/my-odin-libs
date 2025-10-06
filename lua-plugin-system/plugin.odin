@@ -124,7 +124,7 @@ init_lua_environment :: proc() -> ^lua.State {
 	// lua.pushnil(state)
 	// lua.setglobal(state, "debug") // Disable debug library
 
-	// Load Spinster and Raylib bindings
+	// Load App and Raylib bindings
 	load_plugin_libs(state)
 	return state
 }
