@@ -2,6 +2,14 @@
 
 A collection of Odin-lang libraries that I'm making for a personal 2d game engine. I want to keep these as simple as possible.
 
+## [lua-plugin-system](lua-plugin-system/)
+
+Lua plugin system. It allows for easy integration of Lua scripts as plugins, enabling dynamic content loading and scripting capabilities.
+
+* Currently has basic raylib bindings to show how to add libraries to Lua
+* Configuration loading and saving
+* Plugin loading and unloading
+
 ## [audio.odin](audio.odin)
 
 A simple wrapper around miniaudio with error checking and audio asset management.
