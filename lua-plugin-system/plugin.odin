@@ -10,6 +10,7 @@ import "vendor:raylib"
 
 Plugin :: struct {
 	name:                 string,
+	display_name:         string,
 	version:              string,
 	author:               string,
 	description:          string,
@@ -27,7 +28,10 @@ Lua_Types :: union {
 	f32,
 	string,
 	bool,
+	map[string]Lua_Types,
 }
+
+// lua_lib_app_name: cstring = "app" // Define your app library name
 
 plugin_folder: string = "plugins"
 
@@ -129,6 +133,28 @@ init_lua_environment :: proc() -> ^lua.State {
 	return state
 }
 
+get_plugin_path :: proc() -> string {
+	context = runtime.default_context()
+	// Get the current working directory
+	cwd := string(raylib.GetWorkingDirectory())
+	if !os.exists(cwd) {
+		fmt.eprintln("Current working directory does not exist: %s", cwd)
+		return ""
+	}
+
+	when ODIN_OS == .Windows {
+		plugin_path, join_err := strings.join({cwd, plugin_folder}, "\\")
+	} else when ODIN_OS == .Linux {
+		plugin_path, join_err := strings.join({cwd, plugin_folder}, "/")
+	}
+
+	if join_err != nil {
+		fmt.eprintln("Failed to allocate memory for plugin path: %s", join_err)
+		return ""
+	}
+	return plugin_path
+}
+
 load_plugins :: proc() {
 	context = runtime.default_context()
 	// Load plugins from the plugin folder
@@ -213,23 +239,33 @@ load_plugin :: proc(path: string) -> Plugin {
 					// Retrieve plugin metadata
 
 					// Name
-					lua.getglobal(state, "plugin_name")
+					lua.getglobal(state, "Plugin_Name")
 					name := strings.clone_from_cstring(lua.tostring(state, -1))
 					lua.pop(state, 1)
 
+					// Display Name
+					lua.getglobal(state, "Plugin_Display_Name")
+					display_name := strings.clone_from_cstring(lua.tostring(state, -1))
+					lua.pop(state, 1)
+
 					// Version
-					lua.getglobal(state, "plugin_version")
+					lua.getglobal(state, "Plugin_Version")
 					version := strings.clone_from_cstring(lua.tostring(state, -1))
 					lua.pop(state, 1)
 
 					// Author
-					lua.getglobal(state, "plugin_author")
+					lua.getglobal(state, "Plugin_Author")
 					author := strings.clone_from_cstring(lua.tostring(state, -1))
 					lua.pop(state, 1)
 
 					// Description
-					lua.getglobal(state, "plugin_description")
+					lua.getglobal(state, "Plugin_Description")
 					description := strings.clone_from_cstring(lua.tostring(state, -1))
+					lua.pop(state, 1)
+
+					// License
+					lua.getglobal(state, "Plugin_License")
+					license := strings.clone_from_cstring(lua.tostring(state, -1))
 					lua.pop(state, 1)
 
 					// Check that the required functions are defined
@@ -277,12 +313,19 @@ load_plugin :: proc(path: string) -> Plugin {
 						return {}
 					}
 
-					fmt.println("Successfully loaded plugin: %s v%s by %s", name, version, author)
+					fmt.println(
+						"Successfully loaded plugin: %s v%s by %s, Licensed: %s",
+						name,
+						version,
+						author,
+						license,
+					)
 
 					// If there are optional functions, include them in the Plugin struct
 					if len(optional_functions) > 0 {
 						return Plugin {
 							name = name,
+							display_name = display_name,
 							version = version,
 							author = author,
 							description = description,
@@ -295,6 +338,7 @@ load_plugin :: proc(path: string) -> Plugin {
 					// If there are no optional functions, return the Plugin struct without them
 					return Plugin {
 						name = name,
+						display_name = display_name,
 						version = version,
 						author = author,
 						description = description,
@@ -454,7 +498,18 @@ get_table_global :: proc(
 	return table, true
 }
 
-set_table :: proc(state: ^lua.State, key: string, table: map[string]Lua_Types) {
+set_table_global :: proc(state: ^lua.State, key: string, table: map[string]Lua_Types) {
+	lua.getglobal(state, strings.clone_to_cstring(key))
+	if !lua.istable(state, -1) {
+		lua.pop(state, 1) // remove non-table from stack
+		// Create an empty table if it doesn't exist
+		lua.newtable(state)
+		lua.setglobal(state, strings.clone_to_cstring(key))
+	}
+	set_table(state, key, table, false)
+}
+
+set_table :: proc(state: ^lua.State, key: string, table: map[string]Lua_Types, pop: bool = true) {
 	lua.newtable(state)
 	for k, v in table {
 		// Push the value based on its type
@@ -472,7 +527,10 @@ set_table :: proc(state: ^lua.State, key: string, table: map[string]Lua_Types) {
 		}
 		lua.setfield(state, -2, strings.clone_to_cstring(k))
 	}
-	lua.setglobal(state, strings.clone_to_cstring(key))
+	lua.settable(state, -2)
+	if pop {
+		lua.pop(state, 1) // remove the original table from the stack
+	}
 }
 
 loadPluginConfig :: proc(state: ^lua.State, name: string) -> (ok: bool) {
@@ -508,7 +566,7 @@ loadPluginConfig :: proc(state: ^lua.State, name: string) -> (ok: bool) {
 	}
 
 	if !os.exists(config_file) {
-		fmt.eprintln("No config file found for plugin (%s), skipping load.", name)
+		fmt.println("No config file found for plugin (%s), skipping load.", name)
 		return true
 	}
 	json_bytes, read_ok := os.read_entire_file(config_file)
@@ -526,8 +584,13 @@ loadPluginConfig :: proc(state: ^lua.State, name: string) -> (ok: bool) {
 		return false
 	}
 
+	if len(config_map) == 0 {
+		fmt.println("Config file for plugin (%s) is empty, skipping load.", name)
+		return true
+	}
+
 	// Set the config table in Lua
-	set_table(state, "config", config_map)
+	set_table_global(state, "Config", config_map)
 
 	fmt.println("Loaded plugin (%s) config from %s", name, config_file)
 	return true
@@ -536,10 +599,15 @@ loadPluginConfig :: proc(state: ^lua.State, name: string) -> (ok: bool) {
 savePluginConfig :: proc(state: ^lua.State, name: string) -> (ok: bool) {
 	context = runtime.default_context()
 	// Get the config table from Lua and return it as a map[string]any
-	config_map, table_ok := get_table_global(state, "config")
+	config_map, table_ok := get_table_global(state, "Config")
 	if !table_ok {
 		fmt.eprintln("No config table found in plugin (%s), skipping save.", name)
 		return false
+	}
+
+	if len(config_map) == 0 {
+		fmt.println("Config table for plugin (%s) is empty, skipping save.", name)
+		return true
 	}
 
 	// Convert the map to json
@@ -639,8 +707,40 @@ GetCStringParam :: proc(state: ^lua.State, index: i32) -> cstring {
 }
 
 GetStringParam :: proc(state: ^lua.State, index: i32) -> string {
-	str := strings.clone_from_cstring(lua.L_checkstring(state, index))
+	str := strings.clone_from_cstring(GetCStringParam(state, index))
 	return str
+}
+
+GetTableParam :: proc(state: ^lua.State, index: i32) -> map[string]Lua_Types {
+	result: map[string]Lua_Types
+	key_idx: i32 = -2
+	value_idx: i32 = -1
+	key_and_value_count: i32 = 2
+
+	// Iterate over the table
+	lua.pushnil(state) // first key
+	for lua.next(state, index) != 0 {
+		lua.pushvalue(state, key_idx)
+		key := strings.clone_from_cstring(lua.tostring(state, key_idx))
+
+		value: Lua_Types
+		if lua.isstring(state, value_idx) {
+			value = GetStringParam(state, value_idx)
+		} else if lua.isnumber(state, value_idx) {
+			value = GetNumberParam(state, value_idx)
+		} else if lua.isboolean(state, value_idx) {
+			value = bool(lua.toboolean(state, value_idx))
+		} else if lua.isinteger(state, value_idx) {
+			value = int(GetIntegerParam(state, value_idx))
+		} else if lua.istable(state, value_idx) {
+			value = GetTableParam(state, value_idx)
+		} else {
+			value = nil
+		}
+		result[key] = value
+		lua.pop(state, key_and_value_count)
+	}
+	return result
 }
 
 GetVector2 :: proc "c" (state: ^lua.State, index: i32) -> raylib.Vector2 {
