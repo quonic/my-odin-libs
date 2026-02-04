@@ -12,7 +12,7 @@ import "core:strings"
 import win32 "core:sys/windows"
 
 when ODIN_OS == .Darwin || ODIN_OS == .Linux || ODIN_OS == .NetBSD {
-	foreign libc 
+	foreign libc
 	{
 		popen :: proc(command: cstring, type: cstring) -> ^FILE ---
 		pclose :: proc(stream: ^FILE) -> i32 ---
