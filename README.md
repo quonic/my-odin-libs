@@ -2,13 +2,41 @@
 
 A collection of Odin-lang libraries that I'm making for a personal 2d game engine. I want to keep these as simple as possible.
 
+## [RingBuffer](ring/)
+
+My ring buffer implementation. I use this for my plotting library.
+
+```odin
+import "ring"
+rbuffer := ring.MakeRingBuffer(int, 10)
+defer ring.FreeRingBuffer(&rbuffer)
+
+ring.RingBufferAppend(&rbuffer, 5)
+ring.RingBufferAppend(&rbuffer, 10)
+ring.RingBufferAppend(&rbuffer, 15)
+
+fmt.printfln("Initial Ring Buffer: %d", rbuffer.data)
+
+if value, ok := ring.RingBufferFirst(&rbuffer); ok do value^ = 3
+if value, ok := ring.RingBufferLast(&rbuffer); ok do value^ = 4
+
+fmt.printfln("Updated Ring Buffer: %d", rbuffer.data)
+```
+
+Result:
+
+```txt
+Initial Ring Buffer: [5, 10, 15, 0, 0, 0, 0, 0, 0, 0]
+Updated Ring Buffer: [3, 4, 15, 0, 0, 0, 0, 0, 0, 0]
+```
+
 ## [lua-plugin-system](lua-plugin-system/)
 
 Lua plugin system. It allows for easy integration of Lua scripts as plugins, enabling dynamic content loading and scripting capabilities.
 
-* Currently has basic raylib bindings to show how to add libraries to Lua
-* Configuration loading and saving
-* Plugin loading and unloading
+- Currently has basic raylib bindings to show how to add libraries to Lua
+- Configuration loading and saving
+- Plugin loading and unloading
 
 ## [audio.odin](audio.odin)
 
@@ -57,8 +85,8 @@ Mostly this is inteded for getting the slice positions in the image.
 
 This assumes the only settings changed in the Output tab are:
 
-* Checking: Output File and JSON Data
-* Unchecking Meta: Layers and Tags
+- Checking: Output File and JSON Data
+- Unchecking Meta: Layers and Tags
 
 Example Usage:
 
