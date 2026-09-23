@@ -493,7 +493,7 @@ checkAudioResult :: proc(result: miniaudio.result) -> bool {
 
 @(test)
 test_music :: proc(t: ^testing.T) {
-	test_wav_path := fmt.tprintf("%s/test.wav", os.get_current_directory())
+	test_wav_path := fmt.tprintf("%s/test.wav", os.get_working_directory(context.allocator))
 	initAudio()
 	assert(
 		addAudioAsset("test", test_wav_path, true, true, 0),
